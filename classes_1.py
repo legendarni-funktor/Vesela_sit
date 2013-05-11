@@ -1,20 +1,25 @@
 from random import random as rand, shuffle
 import math
+import simplejson as json
+import os
 
 from ploting import Plot
 from preprocess import create_valid_train_preproc_sets, normalize_sets
 
+dump_train_set = False
+
 lamb = 1
 odchylka = 1
-topologie = [4900,700,150,1]
+width = 30
+height = 20
+size = [width, height]
+
+topologie = [width * height, 300, 80, 1]
 
 #training_set = [([1,2,3],[0]),([2,2,3],[0]),([1,1,1],[0]),([3,1,1],[1])]
 training_set = []
 validation = []
 
-def epsilon(time):
-    return 0.2
-#    return max(0.3, 0.8/math.log(math.e + time + 1)**2)
 
 def trans_function_derivation(potencial):
     return lamb * sigmoid(potencial) * (1 - sigmoid(potencial))
@@ -42,8 +47,7 @@ def scal(v1, v2):
         output += v1[i] * v2[i]
     return output
 
-                
-                
+
 class Neuron():
     
     def __init__(self, n_inputs):
@@ -54,10 +58,10 @@ class Neuron():
         self.output = 0
         self.derive = 0
         self.der_vah = []
-    
+    @profile
     def transf_function(self):
         return sigmoid(self.tran_input)
-        
+    @profile    
     def calculate_output(self, input_vector):        
         self.tran_input = scal(input_vector, self.weights) + self.bias
         self.output = self.transf_function()
@@ -70,7 +74,7 @@ class Layer():
     
     def __init__(self, n_neurons, n_inputs):
         self.neurons = [Neuron(n_inputs) for _ in xrange(n_neurons)]
-        
+    @profile    
     def evaluate_neurons(self, prev_out):
         output = []
         for neuron in self.neurons:
@@ -83,7 +87,7 @@ class First_layer():
 
     def __init__(self, n_neurons):
         self.neurons = [Neuron(0) for _ in xrange(n_neurons)]
-
+    @profile
     def evaluate_neurons(self, in_put):
         output = []
         for i, neuron in enumerate(self.neurons):
@@ -96,15 +100,34 @@ class Network():
     
     def __init__(self, config):
         self.layers = []
+        self.before_last = 0
+        self.last = 0
+        self.queue = [0.001, 0.001, 0.001]
+        self.queue_eps = [0.2, 0.2, 0.2]
+        self.eps = 0.1
         for i in xrange(len(config) - 1):
             self.layers.append(Layer(config[i + 1], config[i]))
-    
+    @profile     
     def calc_out(self, in_put):
         for layer in self.layers:
             layer_out = layer.evaluate_neurons(in_put)
             in_put = layer_out
-        return layer_out
+        return layer_out        
+    
+    @profile
+    def epsilon_update(self, time):
+        self.queue_eps.pop(0)
+        self.queue_eps.append(max(min(0.05 + ( sum(self.queue)/len(self.queue) ) * 50, 1), 0.005))
+        if time > 2:
+            self.eps = sum(self.queue_eps) / len(self.queue_eps)
+        else:
+            return 0.2
+        
+    def epsilon(self, time):
+        return self.eps
+#    return max(0.3, 0.8/math.log(math.e + time + 1)**2)
 
+    @profile
     def net_error(self):
         output = 0
         for vzor in training_set:
@@ -112,7 +135,8 @@ class Network():
 #            print self.calc_out(x)
             output += error(self.calc_out(x), d)**2
         return ((output / len(training_set))**(0.5), output)
-
+    
+    @profile
     def partial_derivation_of_error(self, d):
         for i, neuron in enumerate(self.layers[-1].neurons):
             neuron.derive = neuron.output - d[i]
@@ -126,12 +150,10 @@ class Network():
             for j, neuron in enumerate(rest_of_layers[i-1].neurons):
                 mezisoucet = 0
                 for neuron_nad_nim in rest_of_layers[i].neurons:
-                    try:
-                        mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
-                    except: 
-                        pass
+                    mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
                 neuron.derive = mezisoucet
-
+    
+    @profile
     def weight_correction(self, vzor, time):
         (x,d) = vzor
         self.calc_out(x)
@@ -145,16 +167,29 @@ class Network():
         for i in range(len(self.layers)-1):
             for neuron in self.layers[i+1].neurons:
                 for j in xrange(len(neuron.weights)):
-                    neuron.weights[j] -= epsilon(time) * neuron.der_vah[j]
+                    neuron.weights[j] -= self.epsilon(time) * neuron.der_vah[j]
 
                    
 net = Network(topologie)
 
 
 print "Preprocessing..."
-normalize_sets()
-create_valid_train_preproc_sets(validation, training_set)
+if dump_train_set or not os.path.isfile("trainin_set_dump.json"):
+    normalize_sets()
+    create_valid_train_preproc_sets(validation, training_set)
+    
+    file = open("trainin_set_dump.json", "w+")
+    json.dump([training_set, validation], file)
+    file.flush()
+    file.close()
+    
+else:
+    file = open("trainin_set_dump.json", "r")
+    training_set, validation = json.loads(file.read())
+    
+print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
+
 print "Preprocessing successfully finished!\n"
 
 print "Getting clever!..."
@@ -164,7 +199,15 @@ for i in xrange(100):
     current_error = net.net_error()
     error_plot.update(current_error)
     
-    if current_error[0] < 0.01 and current_error[1] < 0.1:
+    net.before_last = net.last
+    net.last = current_error[0]
+    net.queue.pop(0)
+    net.queue.append(net.before_last - net.last)
+    net.epsilon_update(i)
+    
+    print net.eps
+    
+    if current_error[0] < 0.06 and current_error[1] < 0.1:
         break
     print current_error
     for vzor in training_set:
