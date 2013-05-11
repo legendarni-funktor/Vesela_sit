@@ -22,9 +22,9 @@ def normalize_set(path):
 	
 def create_valid_train_preproc_sets(valid_set, train_set):
 	for i, path in enumerate(['training_set_img_neg', 'training_set_img_pos']):
-		preproces_set(train_set, path, i, 8, 28)
+		preproces_set(train_set, path, i, 7, 25)
 	for i, path in enumerate(['valid_set_img_neg', 'valid_set_img_pos']):
-		preproces_set(valid_set, path, i, 8, 28)
+		preproces_set(valid_set, path, i, 7, 25)
 		
 
 def preproces_set(store_set, path, output, columns, rows):
