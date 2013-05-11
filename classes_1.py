@@ -58,10 +58,10 @@ class Neuron():
         self.output = 0
         self.derive = 0
         self.der_vah = []
-    @profile
+#    @profile
     def transf_function(self):
         return sigmoid(self.tran_input)
-    @profile    
+#    @profile    
     def calculate_output(self, input_vector):        
         self.tran_input = scal(input_vector, self.weights) + self.bias
         self.output = self.transf_function()
@@ -74,7 +74,7 @@ class Layer():
     
     def __init__(self, n_neurons, n_inputs):
         self.neurons = [Neuron(n_inputs) for _ in xrange(n_neurons)]
-    @profile    
+#    @profile    
     def evaluate_neurons(self, prev_out):
         output = []
         for neuron in self.neurons:
@@ -87,7 +87,7 @@ class First_layer():
 
     def __init__(self, n_neurons):
         self.neurons = [Neuron(0) for _ in xrange(n_neurons)]
-    @profile
+#    @profile
     def evaluate_neurons(self, in_put):
         output = []
         for i, neuron in enumerate(self.neurons):
@@ -107,14 +107,14 @@ class Network():
         self.eps = 0.1
         for i in xrange(len(config) - 1):
             self.layers.append(Layer(config[i + 1], config[i]))
-    @profile     
+#    @profile     
     def calc_out(self, in_put):
         for layer in self.layers:
             layer_out = layer.evaluate_neurons(in_put)
             in_put = layer_out
         return layer_out        
     
-    @profile
+#    @profile
     def epsilon_update(self, time):
         self.queue_eps.pop(0)
         self.queue_eps.append(max(min(0.05 + ( sum(self.queue)/len(self.queue) ) * 50, 1), 0.005))
@@ -127,7 +127,7 @@ class Network():
         return self.eps
 #    return max(0.3, 0.8/math.log(math.e + time + 1)**2)
 
-    @profile
+#    @profile
     def net_error(self):
         output = 0
         for vzor in training_set:
@@ -136,7 +136,7 @@ class Network():
             output += error(self.calc_out(x), d)**2
         return ((output / len(training_set))**(0.5), output)
     
-    @profile
+#    @profile
     def partial_derivation_of_error(self, d):
         for i, neuron in enumerate(self.layers[-1].neurons):
             neuron.derive = neuron.output - d[i]
@@ -153,7 +153,7 @@ class Network():
                     mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
                 neuron.derive = mezisoucet
     
-    @profile
+#    @profile
     def weight_correction(self, vzor, time):
         (x,d) = vzor
         self.calc_out(x)

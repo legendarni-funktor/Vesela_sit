@@ -22,7 +22,7 @@ def normalize_set(path):
 	
 def create_valid_train_preproc_sets(valid_set, train_set):
 	for i, path in enumerate(['training_set_img_neg', 'training_set_img_pos']):
-		preproces_set(train_set, path, i)
+		preproces_set(train_set, path, i, 8, 28)
 	for i, path in enumerate(['valid_set_img_neg', 'valid_set_img_pos']):
 		preproces_set(valid_set, path, i, 8, 28)
 		
@@ -35,7 +35,7 @@ def preproces_set(store_set, path, output, columns, rows):
 		
 		#matouci, ale bude se hodit
 		(x,y) = obrazek.size
-		citlivost = 0.8
+		citlivost = 0.4
 		
 		#jdu po okraji obrazku a zastavim u prvni cervene
 		
@@ -82,7 +82,7 @@ def preproces_set(store_set, path, output, columns, rows):
 		while(r<(g+b)*citlivost+10):
 			p1y -= 1
 			(r,g,b) = pix[p1x,p1y]
-		dolni_bod = l1y
+		dolni_bod = p1y
 
 		#posledni vertikalni
 		p1x = x-2
@@ -105,7 +105,11 @@ def preproces_set(store_set, path, output, columns, rows):
 # 						(r,g,b) = pix[(sirka_puvodni*i)/sirka+k+levy_bod,(vyska_puvodni*j)/vyska+l+horni_bod]
 # 						barva += r+g+b
 # 				a = barva/(3 * sirka_dilku * vyska_dilku)
-				store_set.append(cut(obrazek, pix, (sirka_dilku*i + pravy_bod + okraj, delka_dilku*j + horni_bod + okraj), (sirka_dilku*(i+1) + pravy_bod - okraj, delka_dilku*(j+1) + horni_bod - okraj), [output]))
+				left = sirka_dilku*i + pravy_bod + okraj
+				up = vyska_dilku*j + horni_bod + okraj
+				x = sirka_dilku*(i+1) + pravy_bod - okraj
+				y = vyska_dilku*(j+1) + horni_bod - okraj
+				store_set.append([cut(obrazek, pix, (left, up), (x, y)), output])
 
 def cut(obrazek, pix, (left,up), (x,y)):	
 	hranice = 760
