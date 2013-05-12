@@ -105,15 +105,15 @@ def preproces_set(store_set, path, output, columns, rows):
 # 						(r,g,b) = pix[(sirka_puvodni*i)/sirka+k+levy_bod,(vyska_puvodni*j)/vyska+l+horni_bod]
 # 						barva += r+g+b
 # 				a = barva/(3 * sirka_dilku * vyska_dilku)
-				left = sirka_dilku*i + pravy_bod + okraj
+				left = sirka_dilku*i + levy_bod + okraj
 				up = vyska_dilku*j + horni_bod + okraj
-				x = sirka_dilku*(i+1) + pravy_bod - okraj
+				x = sirka_dilku*(i+1) + levy_bod - okraj
 				y = vyska_dilku*(j+1) + horni_bod - okraj
 				store_set.append([cut(obrazek, pix, (left, up), (x, y)), output])
 
 def cut(obrazek, pix, (left,up), (x,y)):	
 	hranice = 760
-	
+	"""
 	#hledani horniho bodu 
 	i = left
 	j = up
@@ -171,7 +171,15 @@ def cut(obrazek, pix, (left,up), (x,y)):
 		(r,g,b) = pix[i,j]
 		barva = r + g + b
 	pravy_bod = i
-
+	"""
+	levy_bod = left
+	horni_bod = up
+	pravy_bod = x
+	dolni_bod = y	
+	
+	print (x,y)
+	print obrazek.size
+	
 	matice = []
 	sirka_puvodni = pravy_bod - levy_bod
 	vyska_puvodni = dolni_bod - horni_bod	
