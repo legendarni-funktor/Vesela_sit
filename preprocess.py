@@ -109,7 +109,7 @@ def preproces_set(store_set, path, output, columns, rows):
 				up = vyska_dilku*j + horni_bod + okraj
 				x = sirka_dilku*(i+1) + levy_bod - okraj
 				y = vyska_dilku*(j+1) + horni_bod - okraj
-				store_set.append([cut(obrazek, pix, (left, up), (x, y)), output])
+				store_set.append((cut(obrazek, pix, (left, up), (x, y)), [output]))
 
 def cut(obrazek, pix, (left,up), (x,y)):	
 	hranice = 760
@@ -176,15 +176,12 @@ def cut(obrazek, pix, (left,up), (x,y)):
 	horni_bod = up
 	pravy_bod = x
 	dolni_bod = y	
-	
-	print (x,y)
-	print obrazek.size
-	
+
 	matice = []
 	sirka_puvodni = pravy_bod - levy_bod
 	vyska_puvodni = dolni_bod - horni_bod	
-	sirka = 70
-	vyska = 40
+	sirka = 30
+	vyska = 20
 	sirka_dilku = sirka_puvodni/sirka + 1
 	vyska_dilku = vyska_puvodni/vyska + 1
 	for i in range(sirka):
@@ -208,15 +205,15 @@ def cut(obrazek, pix, (left,up), (x,y)):
 	
 	output_vector = []
 	
-	for i in xrange(len(matice)):
-		output_vector.extend(matice[i])
-	
+ 	for i in xrange(len(matice)):
+ 		output_vector.extend(matice[i])
 	
 	return output_vector
-#	for i in range(x-levy_bod):
-#		for j in range(y-horni_bod):
-#			pix[i,j] = pix[i+levy_bod,j+horni_bod]
-#	for i in range(sirka):
-#		for j in range(vyska):
-#			pix[i,j] = (matice[i][j],matice[i][j],matice[i][j])
-#	obrazek.show()
+
+# 	for i in range(x-levy_bod):
+# 		for j in range(y-horni_bod):
+# 			pix[i,j] = pix[i+levy_bod,j+horni_bod]
+# 	for i in range(sirka):
+# 		for j in range(vyska):
+# 			pix[i,j] = (matice[i][j],matice[i][j],matice[i][j])
+# 	obrazek.show()
