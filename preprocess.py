@@ -176,10 +176,7 @@ def cut(obrazek, pix, (left,up), (x,y)):
 	horni_bod = up
 	pravy_bod = x
 	dolni_bod = y	
-	
-	print (x,y)
-	print obrazek.size
-	
+
 	matice = []
 	sirka_puvodni = pravy_bod - levy_bod
 	vyska_puvodni = dolni_bod - horni_bod	
