@@ -6,7 +6,7 @@ import os
 from ploting import Plot
 from preprocess import create_valid_train_preproc_sets, normalize_sets
 
-dump_train_set = False
+dump_train_set = True
 
 lamb = 1
 odchylka = 1
@@ -128,7 +128,7 @@ class Network():
 #    return max(0.3, 0.8/math.log(math.e + time + 1)**2)
 
 #    @profile
-    def net_error(self):
+    def net_error(self, training_set):
         output = 0
         for vzor in training_set:
             (x,d) = vzor
@@ -196,7 +196,7 @@ print "Getting clever!..."
 error_plot = Plot()
 
 for i in xrange(100):
-    current_error = net.net_error()
+    current_error = net.net_error(training_set)
     error_plot.update(current_error)
     
     net.before_last = net.last
