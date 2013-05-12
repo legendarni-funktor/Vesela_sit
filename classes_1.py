@@ -195,6 +195,8 @@ print "Preprocessing successfully finished!\n"
 print "Getting clever!..."
 error_plot = Plot()
 
+print training_set[0]
+
 for i in xrange(100):
     current_error = net.net_error()
     error_plot.update(current_error)
