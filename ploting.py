@@ -3,7 +3,10 @@ import numpy
 
 class Plot():
     
-    def __init__(self):
+    def __init__(self, size, topologie):
+        self.size = size
+        self.topologie = topologie
+        
         self.error = [[],[]]
         self.accuracy_list = []
         self.x_axe = [i for i in xrange(20)]
@@ -37,4 +40,5 @@ class Plot():
                 plt.subplot(3, 1, i+1)
                 plt.legend(loc='upper left')
         plt.draw()
-        plt.savefig('Learning_curve')
+        
+        plt.savefig('Figures/Learning_curve_Topo:' + str(self.topologie) + "Size:" + str(self.size))

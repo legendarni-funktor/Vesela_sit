@@ -11,10 +11,10 @@ dump_train_set = False
 lamb = 1
 odchylka = 1
 width = 100
-height = 55
+height = 50
 size = [width, height]
 
-topologie = [width * height, 300, 80, 1]
+topologie = [width * height, 500, 80, 1]
 
 training_set = []
 validation = []
@@ -195,9 +195,9 @@ print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.
 
 
 print "Getting clever!..."
-print '    This may take a while so... Try to relax...'
+print '    This may take a while. So... Try to relax...'
 learning_time = time.time()
-error_plot = Plot()
+error_plot = Plot(size, topologie)
 
 for i in xrange(100):
     accuracy, current_error = net.net_error(training_set)
