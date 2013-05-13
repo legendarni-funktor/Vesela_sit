@@ -17,14 +17,14 @@ class Plot():
         self.error[0].append(new_error[0])
         self.error[1].append(new_error[1])
         
+        if len(self.error[1]) > self.ax_len:
+            self.ax_len += 2
+        
         plt.subplot(3, 1, 3)
         plt.axis([-0.05,self.ax_len,0, 1])
         plt.plot(self.accuracy_list,'b-o', label='Accuracy')
         
-        plt.subplot(3, 1, 2)
-        if len(self.error[1]) > self.ax_len:
-            self.ax_len += 4
-            
+        plt.subplot(3, 1, 2)            
         plt.axis([-0.05,self.ax_len,0, max(self.error[0]) + 0.1])
         plt.plot(self.error[0],'r-.o', label='Quadratic mean of errors')
         
