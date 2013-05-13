@@ -215,8 +215,11 @@ def cut(obrazek, pix, (left,up), (x,y)):
  	for i in xrange(len(matice[0])):
  		for j in xrange(len(matice)):
  			arr[i][j] = matice[j][i]
+ 	
  	matshow(arr)
+ 	print "Tohle se udela."
  	show()
+ 	print "Tohle ne. Je to spravne?"
  	
 	return output_vector
 
