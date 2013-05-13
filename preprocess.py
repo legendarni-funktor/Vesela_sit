@@ -23,14 +23,14 @@ def normalize_set(path):
 	shutil.rmtree('tmp') #del tmp
 	
 	
-def create_valid_train_preproc_sets(valid_set, train_set):
+def create_valid_train_preproc_sets(valid_set, train_set, size):
 	for i, path in enumerate(['training_set_img_neg', 'training_set_img_pos']):
-		preproces_set(train_set, path, i, 7, 25)
+		preproces_set(train_set, path, i, 7, 25, size)
 	for i, path in enumerate(['valid_set_img_neg', 'valid_set_img_pos']):
-		preproces_set(valid_set, path, i, 7, 25)
+		preproces_set(valid_set, path, i, 7, 25, size)
 		
 
-def preproces_set(store_set, path, output, columns, rows):
+def preproces_set(store_set, path, output, columns, rows, size):
 	for file_name in os.listdir(path):
 		obrazek = Image.open(path + '/' + file_name)
 		obrazek.convert("RGB")
@@ -116,10 +116,10 @@ def preproces_set(store_set, path, output, columns, rows):
 # 					pix[k, up] = (0,255,0)
 # 					pix[k, y] = (0,255,0)	
 # 				obrazek.show()				
-				store_set.append((cut(obrazek, pix, (left, up), (x, y)), (output,)))
-		obrazek.show()
+				store_set.append((cut(obrazek, pix, (left, up), (x, y), size), (output,)))
+#		obrazek.show()
 
-def cut(obrazek, pix, (left,up), (x,y)):	
+def cut(obrazek, pix, (left,up), (x,y), size):	
 	hranice = 760
 	
 	#hledani horniho bodu 
@@ -184,8 +184,8 @@ def cut(obrazek, pix, (left,up), (x,y)):
 	matice = []
 	sirka_puvodni = pravy_bod - levy_bod
 	vyska_puvodni = dolni_bod - horni_bod	
-	sirka = 100
-	vyska = 55
+	sirka = size[0]
+	vyska = size[1]
 	sirka_dilku = sirka_puvodni/sirka + 1
 	vyska_dilku = vyska_puvodni/vyska + 1
 	for i in range(sirka):

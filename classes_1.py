@@ -1,12 +1,12 @@
 from random import random as rand, shuffle
 import math
 import simplejson as json
-import os
+import os, time
 
 from ploting import Plot
 from preprocess import create_valid_train_preproc_sets, normalize_sets
 
-dump_train_set = True
+dump_train_set = False
 
 lamb = 1
 odchylka = 1
@@ -16,7 +16,6 @@ size = [width, height]
 
 topologie = [width * height, 300, 80, 1]
 
-#training_set = [([1,2,3],[0]),([2,2,3],[0]),([1,1,1],[0]),([3,1,1],[1])]
 training_set = []
 validation = []
 
@@ -52,7 +51,6 @@ class Neuron():
     
     def __init__(self, n_inputs):
         self.weights = [rand() - 0.5 for _ in xrange(n_inputs)]
-#        self.weights = [(rand() / (n_inputs**(0.5)/3**0.5)) * (-1)**(math.floor(10*rand())%2) for _ in xrange(n_inputs)]
         self.bias = 0
         self.transfer_input = 0
         self.output = 0
@@ -125,24 +123,25 @@ class Network():
         
     def epsilon(self, time):
         return self.eps
-#    return max(0.3, 0.8/math.log(math.e + time + 1)**2)
 
 #    @profile
     def net_error(self, training_set):
         output = 0
+        correct_output = 0
         for vzor in training_set:
             (x,d) = vzor
-#            print self.calc_out(x)
-            output += error(self.calc_out(x), d)**2
-        return ((output / len(training_set))**(0.5), output)
+            net_output = self.calc_out(x)
+            output += error(net_output, d)**2
+            if int(round(net_output[0])) == d[0]: #pocita kolikrat sit vyhodnotila vzor spravne
+                correct_output += 1
+                
+        return float(correct_output)/len(training_set), ((output / len(training_set))**(0.5), output)
     
 #    @profile
     def partial_derivation_of_error(self, d):
         for i, neuron in enumerate(self.layers[-1].neurons):
             neuron.derive = neuron.output - d[i]
-        #for i in xrange(len(self.layers[len(self.layers) - 1].neurons)):
-            #self.layers[len(self.layers) - 1].neurons[i].derive = self.layers[len(self.layers) - 1].neurons[i].output - d[i]
-
+    
         rest_of_layers = list(self.layers)
         rest_of_layers.reverse()
         rest_of_layers.pop(0)
@@ -174,9 +173,10 @@ net = Network(topologie)
 
 
 print "Preprocessing..."
+preproc_strat_time = time.time()
 if dump_train_set or not os.path.isfile("trainin_set_dump.json"):
     normalize_sets()
-    create_valid_train_preproc_sets(validation, training_set)
+    create_valid_train_preproc_sets(validation, training_set, size)
     
     file = open("trainin_set_dump.json", "w+")
     json.dump([training_set, validation], file)
@@ -187,17 +187,20 @@ else:
     file = open("trainin_set_dump.json", "r")
     training_set, validation = json.loads(file.read())
     
+    
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
 training_set = training_set[0:40]
-print "Preprocessing successfully finished!\n"
+print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
+
 
 print "Getting clever!..."
+learning_time = time.time()
 error_plot = Plot()
 
 for i in xrange(100):
-    current_error = net.net_error(training_set)
-    error_plot.update(current_error)
+    accuracy, current_error = net.net_error(training_set)
+    error_plot.update(current_error, accuracy)
     
     net.before_last = net.last
     net.last = current_error[0]
@@ -205,17 +208,20 @@ for i in xrange(100):
     net.queue.append(net.before_last - net.last)
     net.epsilon_update(i)
     
-    print net.eps
+    print "    Current epsilon: {0:.2f}".format(net.eps)
     
     if current_error[0] < 0.06 and current_error[1] < 0.1:
         break
-    print current_error
     for vzor in training_set:
         net.weight_correction(vzor,i)
-        
 
-for vzor in training_set:
-    print str(vzor[1]) + " == " + str(net.calc_out(vzor[0]))
-print 'Bagr_NO.1'
-for valid_vzor in validation:    
-    print str(valid_vzor[1]) + " == " + str(net.calc_out(valid_vzor[0]))
+print "Learning finished in time: {0:.2f}sec".format(time.time() - learning_time)        
+
+acc_sum = 0
+for valid_vzor in validation:
+    net_out = net.calc_out(valid_vzor[0])
+    if valid_vzor[1] == int(round(net_out[0])):
+        acc_sum += 1
+     
+print "Network accuracy: {0:.3f}".format(float(acc_sum)*len(validation))
+
