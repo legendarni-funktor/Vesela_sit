@@ -10,8 +10,8 @@ dump_train_set = True
 
 lamb = 1
 odchylka = 1
-width = 60
-height = 40
+width = 100
+height = 55
 size = [width, height]
 
 topologie = [width * height, 300, 80, 1]
