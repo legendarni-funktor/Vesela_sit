@@ -96,7 +96,7 @@ def preproces_set(store_set, path, output, columns, rows):
 			(r,g,b) = pix[p1x,p1y]
 		pravy_bod = p1x
 		
-		okraj = 30
+		okraj = 100
 		okraj = int(obrazek.size[0]/7000 * okraj)
 
 		sirka_puvodni = pravy_bod - levy_bod
@@ -104,13 +104,7 @@ def preproces_set(store_set, path, output, columns, rows):
 		sirka_dilku = sirka_puvodni/columns - 1
 		vyska_dilku = vyska_puvodni/rows - 1
 		for i in range(columns):
-			for j in range(rows):
-#				for k in range(sirka_dilku):
-# 					for l in range(vyska_dilku):
-# 						(r,g,b) = pix[(sirka_puvodni*i)/sirka+k+levy_bod,(vyska_puvodni*j)/vyska+l+horni_bod]
-# 						barva += r+g+b
-# 				a = barva/(3 * sirka_dilku * vyska_dilku)
-				
+			for j in range(rows):				
 				left = sirka_dilku*i + levy_bod + okraj
 				up = vyska_dilku*j + horni_bod + okraj
 				x = sirka_dilku*(i+1) + levy_bod - okraj
@@ -123,6 +117,7 @@ def preproces_set(store_set, path, output, columns, rows):
 # 					pix[k, y] = (0,255,0)	
 # 				obrazek.show()				
 				store_set.append((cut(obrazek, pix, (left, up), (x, y)), (output,)))
+		obrazek.show()
 
 def cut(obrazek, pix, (left,up), (x,y)):	
 	hranice = 760
@@ -140,7 +135,7 @@ def cut(obrazek, pix, (left,up), (x,y)):
 				return
 		else:
 			i = i+1
-		(r,g,b) = pix[i,j]
+		r = redness(obrazek, i, j, (left-x)/200)
 	horni_bod = j
 	i = x-2
 	j = y-2
@@ -152,7 +147,7 @@ def cut(obrazek, pix, (left,up), (x,y)):
 				return
 		else:
 			i = i-1
-		(r,g,b) = pix[i,j]
+		r = redness(obrazek, i, j, (left-x)/200)
 	dolni_bod = j
 	i = left
 	j = up
@@ -164,7 +159,7 @@ def cut(obrazek, pix, (left,up), (x,y)):
 				return
 		else:
 			j = j+1
-		(r,g,b) = pix[i,j]
+		r = redness(obrazek, i, j, (left-x)/200)
 	levy_bod = i
 	i = x-2
 	j = y-2
@@ -176,14 +171,16 @@ def cut(obrazek, pix, (left,up), (x,y)):
 				return
 		else:
 			j = j-1
-		(r,g,b) = pix[i,j]
+		r = redness(obrazek, i, j, (left-x)/200)
 	pravy_bod = i
 	
-# 	levy_bod = left
-# 	horni_bod = up
-# 	pravy_bod = x
-# 	dolni_bod = y	
-
+	for i in range(levy_bod, pravy_bod):
+		pix[i,horni_bod] = (0, 255, 0)
+		pix[i,dolni_bod] = (0, 255, 0)
+	for i in range(horni_bod, dolni_bod):
+		pix[pravy_bod,i] = (0, 255, 0)
+		pix[levy_bod,i] = (0, 255, 0)	
+	
 	matice = []
 	sirka_puvodni = pravy_bod - levy_bod
 	vyska_puvodni = dolni_bod - horni_bod	
@@ -202,6 +199,7 @@ def cut(obrazek, pix, (left,up), (x,y)):
 			a = barva/(2 * sirka_dilku * vyska_dilku)
 			matice[i].append(a)
 	
+	#prepsani matice na cernobilou
 	for i in xrange(len(matice)):
 		for j, n in enumerate(matice[i]):
 			if n > 230:
@@ -215,13 +213,19 @@ def cut(obrazek, pix, (left,up), (x,y)):
  	for i in xrange(len(matice)):
  		output_vector.extend(matice[i])
  	
-   	arr = zeros((len(matice[0]), len(matice)))
-   	for i in xrange(len(matice[0])):
-   		for j in xrange(len(matice)):
-   			arr[i][j] = matice[j][i]
-  	matshow(arr)
-  	show()
+ 	#vykresleni matice
+#    	arr = zeros((len(matice[0]), len(matice)))
+#    	for i in xrange(len(matice[0])):
+#    		for j in xrange(len(matice)):
+#    			arr[i][j] = matice[j][i]
+#   	matshow(arr)
+#   	show()
  	
 	return output_vector
 
-
+def redness(obrazek,x,y,rozsah):
+	r = 0
+	for i in range(x-rozsah,x+rozsah):
+		for j in range(y-rozsah,y+rozsah):
+			r += pix[i,j][0]
+	return r / (2*rozsah + 1)**2
