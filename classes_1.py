@@ -190,7 +190,7 @@ else:
     
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-training_set = training_set[0:1]
+training_set = training_set[0:60]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
@@ -225,4 +225,4 @@ for valid_vzor in validation:
     if valid_vzor[1][0] == int(round(net_out[0])):
         acc_sum += 1
      
-print "Network accuracy: {0:.3f}".format(float(acc_sum)*len(validation))
+print "Network accuracy: {0:.3f}".format(float(acc_sum)/len(validation))
