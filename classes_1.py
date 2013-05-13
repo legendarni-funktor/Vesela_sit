@@ -189,7 +189,7 @@ else:
     
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-
+training_set = training_set[0:40]
 print "Preprocessing successfully finished!\n"
 
 print "Getting clever!..."

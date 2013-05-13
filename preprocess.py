@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 from PIL import Image
+from matplotlib.pylab import *
 import os, shutil
 import math
+from pylab import *
+import matplotlib.pyplot as plt
 
 def normalize_sets():
 	for path in ['training_set_img_neg', 'training_set_img_pos', 'valid_set_img_neg', 'valid_set_img_pos']:
@@ -207,13 +210,14 @@ def cut(obrazek, pix, (left,up), (x,y)):
 	
  	for i in xrange(len(matice)):
  		output_vector.extend(matice[i])
-	
+ 	
+ 	arr = zeros((len(matice[0]), len(matice)))
+ 	for i in xrange(len(matice[0])):
+ 		for j in xrange(len(matice)):
+ 			arr[i][j] = matice[j][i]
+ 	matshow(arr)
+ 	show()
+ 	
 	return output_vector
 
-# 	for i in range(x-levy_bod):
-# 		for j in range(y-horni_bod):
-# 			pix[i,j] = pix[i+levy_bod,j+horni_bod]
-# 	for i in range(sirka):
-# 		for j in range(vyska):
-# 			pix[i,j] = (matice[i][j],matice[i][j],matice[i][j])
-# 	obrazek.show()
+

@@ -18,8 +18,8 @@ class Plot():
         plt.subplot(2, 1, 2)
         if len(self.error[1]) > self.ax_len:
             self.ax_len += 2
-        plt.axis([-0.05,self.ax_len,0, max(3, max([i*10 for i in self.error[0]]) + 0.3)])
-        plt.plot([i*10 for i in self.error[0]],'r-.o', label='Quadratic mean of errors')
+        plt.axis([-0.05,self.ax_len,0, max(3, max(self.error[0]) + 0.1)])
+        plt.plot(self.error[0],'r-.o', label='Quadratic mean of errors')
         plt.subplot(2, 1, 1)
         plt.axis([-0.05,self.ax_len,0,max(self.error[1]) + 1])
         plt.plot(self.error[1], 'g-o', label='Sum of error')# ,self.x_axe, self.error[1], 'g-')
