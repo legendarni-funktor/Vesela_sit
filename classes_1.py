@@ -190,11 +190,12 @@ else:
     
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-training_set = training_set[0:40]
+training_set = training_set[0:1]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
 print "Getting clever!..."
+print '    This may take a while so... Try to relax...'
 learning_time = time.time()
 error_plot = Plot()
 
@@ -215,13 +216,13 @@ for i in xrange(100):
     for vzor in training_set:
         net.weight_correction(vzor,i)
 
-print "Learning finished in time: {0:.2f}sec".format(time.time() - learning_time)        
+print "Learning finished in time: {0:.2f}sec\n".format(time.time() - learning_time)        
 
+print "Calculating accuracy..."
 acc_sum = 0
 for valid_vzor in validation:
     net_out = net.calc_out(valid_vzor[0])
-    if valid_vzor[1] == int(round(net_out[0])):
+    if valid_vzor[1][0] == int(round(net_out[0])):
         acc_sum += 1
      
 print "Network accuracy: {0:.3f}".format(float(acc_sum)*len(validation))
-
