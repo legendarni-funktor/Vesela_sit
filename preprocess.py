@@ -96,9 +96,9 @@ def preproces_set(store_set, path, output, columns, rows, size):
 			(r,g,b) = pix[p1x,p1y]
 		pravy_bod = p1x
 		
-		okraj = 100
-		okraj = int(obrazek.size[0]/7000 * okraj)
-
+		okraj = 20
+		okraj = (obrazek.size[0] * okraj)/7000
+		
 		sirka_puvodni = pravy_bod - levy_bod
 		vyska_puvodni = dolni_bod - horni_bod
 		sirka_dilku = sirka_puvodni/columns - 1
@@ -117,7 +117,7 @@ def preproces_set(store_set, path, output, columns, rows, size):
 # 					pix[k, y] = (0,255,0)	
 # 				obrazek.show()				
 				store_set.append((cut(obrazek, pix, (left, up), (x, y), size), (output,)))
-#		obrazek.show()
+		obrazek.show()
 
 def cut(obrazek, pix, (left,up), (x,y), size):	
 	hranice = 760
@@ -125,7 +125,8 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 	#hledani horniho bodu 
 	i = left
 	j = up
-	citlivost = 200
+	citlivost = 5
+	rozsah = (x - left)/400
 	(r,g,b) = pix[i,j]
 	while r > citlivost:
 		if i == x-1:
@@ -135,7 +136,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 				return
 		else:
 			i = i+1
-		r = redness(obrazek, i, j, (left-x)/200)
+		r = redness(pix, i, j, rozsah)
 	horni_bod = j
 	i = x-2
 	j = y-2
@@ -147,7 +148,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 				return
 		else:
 			i = i-1
-		r = redness(obrazek, i, j, (left-x)/200)
+		r = redness(pix, i, j, rozsah)
 	dolni_bod = j
 	i = left
 	j = up
@@ -159,7 +160,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 				return
 		else:
 			j = j+1
-		r = redness(obrazek, i, j, (left-x)/200)
+		r = redness(pix, i, j, rozsah)
 	levy_bod = i
 	i = x-2
 	j = y-2
@@ -171,7 +172,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 				return
 		else:
 			j = j-1
-		r = redness(obrazek, i, j, (left-x)/200)
+		r = redness(pix, i, j, rozsah)
 	pravy_bod = i
 	
 	for i in range(levy_bod, pravy_bod):
@@ -223,7 +224,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
  	
 	return output_vector
 
-def redness(obrazek,x,y,rozsah):
+def redness(pix, x, y, rozsah):
 	r = 0
 	for i in range(x-rozsah,x+rozsah):
 		for j in range(y-rozsah,y+rozsah):

@@ -6,7 +6,7 @@ import os, time
 from ploting import Plot
 from preprocess import create_valid_train_preproc_sets, normalize_sets
 
-dump_train_set = False
+dump_train_set = True
 
 lamb = 1
 odchylka = 1
