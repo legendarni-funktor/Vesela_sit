@@ -96,7 +96,7 @@ def preproces_set(store_set, path, output, columns, rows, size):
 			(r,g,b) = pix[p1x,p1y]
 		pravy_bod = p1x
 		
-		okraj = 20
+		okraj = 30
 		okraj = (obrazek.size[0] * okraj)/7000
 		
 		sirka_puvodni = pravy_bod - levy_bod
@@ -125,8 +125,9 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 	#hledani horniho bodu 
 	i = left
 	j = up
-	citlivost = 5
+	citlivost = 100
 	rozsah = (x - left)/400
+	rozsah = 1
 	(r,g,b) = pix[i,j]
 	while r > citlivost:
 		if i == x-1:
@@ -215,12 +216,12 @@ def cut(obrazek, pix, (left,up), (x,y), size):
  		output_vector.extend(matice[i])
  	
  	#vykresleni matice
-#    	arr = zeros((len(matice[0]), len(matice)))
-#    	for i in xrange(len(matice[0])):
-#    		for j in xrange(len(matice)):
-#    			arr[i][j] = matice[j][i]
-#   	matshow(arr)
-#   	show()
+    	arr = zeros((len(matice[0]), len(matice)))
+    	for i in xrange(len(matice[0])):
+    		for j in xrange(len(matice)):
+    			arr[i][j] = matice[j][i]
+   	matshow(arr)
+   	show()
  	
 	return output_vector
 
