@@ -1,5 +1,5 @@
 from random import random as rand, shuffle
-import math
+import math, numpy
 import simplejson as json
 import os, time
 
@@ -20,9 +20,9 @@ training_set = []
 validation = []
 
 #@profile
-def trans_function_derivation(potencial):
-    return lamb * sigmoid(potencial) * (1 - sigmoid(potencial))
-#@profile
+def trans_function_derivation(potencial): #Dosazena primo sigmoid - prilis caste volani.
+    return lamb * (1/(1+math.e**(potencial*(-1*lamb)))) * (1 - (1/(1+math.e**(potencial*(-1*lamb)))))
+##@profile
 def sigmoid(x):
     return 1/(1+math.e**(x*(-1*lamb)))
 #@profile
@@ -37,29 +37,26 @@ def error(v1, v2):
 #@profile
 def scal(v1, v2):
     output = 0
-    try:
-        if len(v1) != len(v2):
-            print "Nasobis vektory z jine dimenze!"
-    except:
-        pass
-    for i in xrange(len(v1)):
-        output += v1[i] * v2[i]
-    return output
+    if len(v1) != len(v2):
+        print "Nasobis vektory z jine dimenze!"
+    return numpy.dot(v1, v2)
 
 
 class Neuron():
     
     def __init__(self, n_inputs):
-        self.weights = [rand() - 0.5 for _ in xrange(n_inputs)]
+        self.weights = numpy.zeros(n_inputs)
+        for i in xrange(n_inputs): 
+            self.weights[i] = rand() - 0.5
         self.bias = 0
         self.transfer_input = 0
         self.output = 0
         self.derive = 0
         self.der_vah = []
-#    @profile
+    #@profile
     def transf_function(self):
         return sigmoid(self.tran_input)
-#    @profile    
+    #@profile    
     def calculate_output(self, input_vector):        
         self.tran_input = scal(input_vector, self.weights) + self.bias
         self.output = self.transf_function()
@@ -72,7 +69,7 @@ class Layer():
     
     def __init__(self, n_neurons, n_inputs):
         self.neurons = [Neuron(n_inputs) for _ in xrange(n_neurons)]
-#    @profile    
+    #@profile    
     def evaluate_neurons(self, prev_out):
         output = []
         for neuron in self.neurons:
@@ -85,12 +82,12 @@ class First_layer():
 
     def __init__(self, n_neurons):
         self.neurons = [Neuron(0) for _ in xrange(n_neurons)]
-#    @profile
+    #@profile
     def evaluate_neurons(self, in_put):
-        output = []
+        output = numpy.zeros(len(self.neurons))
         for i, neuron in enumerate(self.neurons):
             neuron.calculate_output([in_put[i]])
-            output.append(neuron.output)            
+            output[i] = neuron.output            
         return output
 
 
@@ -105,14 +102,18 @@ class Network():
         self.eps = 0.1
         for i in xrange(len(config) - 1):
             self.layers.append(Layer(config[i + 1], config[i]))
-#    @profile     
+    #@profile     
     def calc_out(self, in_put):
+        in_put_tmp = numpy.zeros(len(in_put))
+        for i in xrange(len(in_put)):
+            in_put_tmp[i] = in_put[i]
+        in_put = in_put_tmp
         for layer in self.layers:
             layer_out = layer.evaluate_neurons(in_put)
             in_put = layer_out
         return layer_out        
     
-#    @profile
+    #@profile
     def epsilon_update(self, time):
         self.queue_eps.pop(0)
         self.queue_eps.append(max(min(0.05 + ( sum(self.queue)/len(self.queue) ) * 50, 1), 0.005))
@@ -124,7 +125,7 @@ class Network():
     def epsilon(self, time):
         return self.eps
 
-#    @profile
+    #@profile
     def net_error(self, training_set):
         output = 0
         correct_output = 0
@@ -137,7 +138,7 @@ class Network():
                 
         return float(correct_output)/len(training_set), ((output / len(training_set))**(0.5), output)
     
-#    @profile
+    #@profile
     def partial_derivation_of_error(self, d):
         for i, neuron in enumerate(self.layers[-1].neurons):
             neuron.derive = neuron.output - d[i]
@@ -152,7 +153,7 @@ class Network():
                     mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
                 neuron.derive = mezisoucet
     
-#    @profile
+    #@profile
     def weight_correction(self, vzor, time):
         (x,d) = vzor
         self.calc_out(x)
@@ -190,7 +191,7 @@ else:
     
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-training_set = training_set[0:60]
+training_set = training_set[0:40]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
@@ -223,7 +224,7 @@ print "Learning finished in time: {0:.2f}sec\n".format(time.time() - learning_ti
 
 print "Calculating accuracy..."
 acc_sum = 0
-for valid_vzor in validation:
+for i, valid_vzor in enumerate(validation):
     net_out = net.calc_out(valid_vzor[0])
     if valid_vzor[1][0] == int(round(net_out[0])):
         acc_sum += 1
