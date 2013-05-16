@@ -96,7 +96,7 @@ def preproces_set(store_set, path, output, columns, rows, size):
 			(r,g,b) = pix[p1x,p1y]
 		pravy_bod = p1x
 		
-		okraj = 30
+		okraj = 50
 		okraj = (obrazek.size[0] * okraj)/7000
 		
 		sirka_puvodni = pravy_bod - levy_bod
@@ -121,13 +121,14 @@ def preproces_set(store_set, path, output, columns, rows, size):
 
 def cut(obrazek, pix, (left,up), (x,y), size):	
 	hranice = 760
-	
+	left = left + (x - left)/10
+	x = x - (x - left)/10
 	#hledani horniho bodu 
 	i = left
 	j = up
 	citlivost = 100
-	rozsah = (x - left)/400
-	rozsah = 1
+	#rozsah = (x - left)/300
+	rozsah = 1	#vic zpomaluje a orezava moc
 	(r,g,b) = pix[i,j]
 	while r > citlivost:
 		if i == x-1:
@@ -146,6 +147,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 			i = x-2
 			j = j-1
 			if j == 0:
+				print "prazdny obrazek"
 				return
 		else:
 			i = i-1
@@ -176,13 +178,6 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 		r = redness(pix, i, j, rozsah)
 	pravy_bod = i
 	
-	for i in range(levy_bod, pravy_bod):
-		pix[i,horni_bod] = (0, 255, 0)
-		pix[i,dolni_bod] = (0, 255, 0)
-	for i in range(horni_bod, dolni_bod):
-		pix[pravy_bod,i] = (0, 255, 0)
-		pix[levy_bod,i] = (0, 255, 0)	
-	
 	matice = []
 	sirka_puvodni = pravy_bod - levy_bod
 	vyska_puvodni = dolni_bod - horni_bod	
@@ -197,14 +192,23 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 			for k in range(sirka_dilku):
 				for l in range(vyska_dilku):
 					(r,g,b) = pix[(sirka_puvodni*i)/sirka+k+levy_bod,(vyska_puvodni*j)/vyska+l+horni_bod]
-					barva += g+r
-			a = barva/(2 * sirka_dilku * vyska_dilku)
+					barva += r
+			a = barva/(sirka_dilku * vyska_dilku)
 			matice[i].append(a)
+	
+	#zeleny obdelnicek pro debug
+# 	for i in range(levy_bod, pravy_bod):
+# 		pix[i,horni_bod] = (0, 255, 0)
+# 		pix[i,dolni_bod] = (0, 255, 0)
+# 	for i in range(horni_bod, dolni_bod):
+# 		pix[pravy_bod,i] = (0, 255, 0)
+# 		pix[levy_bod,i] = (0, 255, 0)	
+	
 	
 	#prepsani matice na cernobilou
 	for i in xrange(len(matice)):
 		for j, n in enumerate(matice[i]):
-			if n > 230:
+			if n > 220:
 				matice[i][j] = 0
 			else:
 				matice[i][j] = 1
