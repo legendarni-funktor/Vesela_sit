@@ -6,7 +6,7 @@ import os, time
 from ploting import Plot
 from preprocess import create_valid_train_preproc_sets, normalize_sets
 
-dump_train_set = True
+dump_train_set = False
 
 lamb = 1
 odchylka = 1
@@ -19,13 +19,13 @@ topologie = [width * height, 500, 80, 1]
 training_set = []
 validation = []
 
-
+#@profile
 def trans_function_derivation(potencial):
     return lamb * sigmoid(potencial) * (1 - sigmoid(potencial))
-
+#@profile
 def sigmoid(x):
     return 1/(1+math.e**(x*(-1*lamb)))
-
+#@profile
 def error(v1, v2):
     output = 0
     if len(v1) != len(v2):
@@ -34,7 +34,7 @@ def error(v1, v2):
         output += (v1[i] - v2[i])**2
     return output/2
 
-
+#@profile
 def scal(v1, v2):
     output = 0
     try:
@@ -200,6 +200,8 @@ learning_time = time.time()
 error_plot = Plot(size, topologie)
 
 for i in xrange(100):
+    iter_time = time.time()
+    
     accuracy, current_error = net.net_error(training_set)
     error_plot.update(current_error, accuracy)
     
@@ -215,6 +217,7 @@ for i in xrange(100):
         break
     for vzor in training_set:
         net.weight_correction(vzor,i)
+    print "\t\t\t\tIteration time: {0:.2f}sec".format(time.time() - iter_time)
 
 print "Learning finished in time: {0:.2f}sec\n".format(time.time() - learning_time)        
 
