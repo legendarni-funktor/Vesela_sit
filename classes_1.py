@@ -148,10 +148,19 @@ class Network():
         rest_of_layers.pop(0)
         for i in xrange(len(rest_of_layers) - 1):
             for j, neuron in enumerate(rest_of_layers[i-1].neurons):
-                mezisoucet = 0
-                for neuron_nad_nim in rest_of_layers[i].neurons:
-                    mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
-                neuron.derive = mezisoucet
+#                mezisoucet = 0 #Nahrazeno fci calculate_mezisoucet - optimalizace - mene caste volani trans_function
+#                for neuron_nad_nim in rest_of_layers[i].neurons:
+#                    mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
+#                neuron.derive = mezisoucet
+                neuron.derive = self.calculate_mezisoucet(rest_of_layers[i], j)
+    
+    #@profile
+    def calculate_mezisoucet(self, rest_of_layers_i, j):
+        mezisoucet = 0
+        for neuron_nad_nim in rest_of_layers_i.neurons: #ja vim, je to hnus, ale bude to rychle.
+            potencial = neuron_nad_nim.transfer_input
+            trans_out = lamb * (1/(1+math.e**(potencial*(-1*lamb)))) * (1 - (1/(1+math.e**(potencial*(-1*lamb)))))
+            mezisoucet += neuron_nad_nim.derive * trans_out * neuron_nad_nim.weights[j]
     
     #@profile
     def weight_correction(self, vzor, time):
@@ -161,15 +170,22 @@ class Network():
         for i in xrange(len(self.layers) - 1):
             for neuron in self.layers[i+1].neurons:
                 neuron.der_vah = []
-                for neuron_pod_nim in self.layers[i].neurons:
-                    neuron.der_vah.append(neuron.derive * trans_function_derivation(neuron.transfer_input) * neuron_pod_nim.output)
+                self.calculate_neuron_der(i, neuron)
+#                for neuron_pod_nim in self.layers[i].neurons:
+#                    neuron.der_vah.append(neuron.derive * trans_function_derivation(neuron.transfer_input) * neuron_pod_nim.output)
         
         for i in range(len(self.layers)-1):
             for neuron in self.layers[i+1].neurons:
                 for j in xrange(len(neuron.weights)):
                     neuron.weights[j] -= self.epsilon(time) * neuron.der_vah[j]
-
-                   
+    #@profile
+    def calculate_neuron_der(self, i, neuron):
+        for neuron_pod_nim in self.layers[i].neurons:
+            potencial = neuron.transfer_input
+            trans_out = lamb * (1/(1+math.e**(potencial*(-1*lamb)))) * (1 - (1/(1+math.e**(potencial*(-1*lamb)))))
+            neuron.der_vah.append(neuron.derive * trans_out * neuron_pod_nim.output)   
+            
+              
 net = Network(topologie)
 
 
@@ -191,7 +207,7 @@ else:
     
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-training_set = training_set[0:40]
+training_set = training_set[0:5]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
