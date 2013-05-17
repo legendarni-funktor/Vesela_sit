@@ -41,4 +41,8 @@ class Plot():
                 plt.legend(loc='upper left')
         plt.draw()
         
-        plt.savefig('Figures/Learning_curve_Topo:' + str(self.topologie) + "Size:" + str(self.size))
+        plt.savefig('Learning_curve')
+        
+    def save_plot(self, acc):
+        
+        plt.savefig('Figures/Learning_curve_Topo:' + str(self.topologie) + 'Size:' + str(self.size) + 'Acc: ' + str(int(acc*100)) + '%')

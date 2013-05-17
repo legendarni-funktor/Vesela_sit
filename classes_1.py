@@ -207,7 +207,7 @@ else:
     
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-training_set = training_set[0:5]
+training_set = training_set[0:50]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
@@ -219,7 +219,7 @@ error_plot = Plot(size, topologie)
 for i in xrange(100):
     iter_time = time.time()
     
-    accuracy, current_error = net.net_error(training_set)
+    accuracy, current_error = net.net_error(validation)
     error_plot.update(current_error, accuracy)
     
     net.before_last = net.last
@@ -230,7 +230,7 @@ for i in xrange(100):
     
     print "    Current epsilon: {0:.2f}".format(net.eps)
     
-    if current_error[0] < 0.06 and current_error[1] < 0.1:
+    if current_error[0] < 0.1 and current_error[1] < 0.1:
         break
     for vzor in training_set:
         net.weight_correction(vzor,i)
@@ -244,5 +244,10 @@ for i, valid_vzor in enumerate(validation):
     net_out = net.calc_out(valid_vzor[0])
     if valid_vzor[1][0] == int(round(net_out[0])):
         acc_sum += 1
-     
+        
+        
 print "Network accuracy: {0:.3f}".format(float(acc_sum)/len(validation))
+
+acc = float(acc_sum)/len(validation)
+
+error_plot.save_plot(acc)

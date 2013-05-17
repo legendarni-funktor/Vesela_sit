@@ -147,7 +147,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 			i = x-2
 			j = j-1
 			if j == 0:
-				print "prazdny obrazek"
+ 				print "prazdny obrazek"
 				return
 		else:
 			i = i-1
@@ -220,12 +220,12 @@ def cut(obrazek, pix, (left,up), (x,y), size):
  		output_vector.extend(matice[i])
  	
  	#vykresleni matice
-    	arr = zeros((len(matice[0]), len(matice)))
-    	for i in xrange(len(matice[0])):
-    		for j in xrange(len(matice)):
-    			arr[i][j] = matice[j][i]
-   	matshow(arr)
-   	show()
+#     	arr = zeros((len(matice[0]), len(matice)))
+#     	for i in xrange(len(matice[0])):
+#     		for j in xrange(len(matice)):
+#     			arr[i][j] = matice[j][i]
+#    	matshow(arr)
+#    	show()
  	
 	return output_vector
 
