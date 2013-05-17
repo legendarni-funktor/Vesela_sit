@@ -103,20 +103,16 @@ def preproces_set(store_set, path, output, columns, rows, size):
 		vyska_puvodni = dolni_bod - horni_bod
 		sirka_dilku = sirka_puvodni/columns - 1
 		vyska_dilku = vyska_puvodni/rows - 1
-		for i in range(columns):
-			for j in range(rows):				
+		for i in xrange(columns):
+			for j in xrange(rows):				
 				left = sirka_dilku*i + levy_bod + okraj
 				up = vyska_dilku*j + horni_bod + okraj
 				x = sirka_dilku*(i+1) + levy_bod - okraj
 				y = vyska_dilku*(j+1) + horni_bod - okraj
-# 				for k in range(up,y):
-# 					pix[left, k] = (0,255,0)
-# 					pix[x, k] = (0,255,0)					
-# 				for k in range(left,x):
-# 					pix[k, up] = (0,255,0)
-# 					pix[k, y] = (0,255,0)	
-# 				obrazek.show()				
 				store_set.append((cut(obrazek, pix, (left, up), (x, y), size), (output,)))
+	
+		for k in range(x):
+			pix[k, horni_bod] = (0,255,0)				
 		obrazek.show()
 
 def cut(obrazek, pix, (left,up), (x,y), size):	
@@ -126,23 +122,27 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 	#hledani horniho bodu 
 	i = left
 	j = up
-	citlivost = 100
+	citlivost_r = 200
+	citlivost_b = 300
 	#rozsah = (x - left)/300
 	rozsah = 1	#vic zpomaluje a orezava moc
 	(r,g,b) = pix[i,j]
-	while r > citlivost:
+	while b<citlivost_b or r>citlivost_r:
 		if i == x-1:
 			i = left
 			j = j+1
 			if j == y:
+ 				print "prazdny obrazek"
 				return
 		else:
 			i = i+1
-		r = redness(pix, i, j, rozsah)
+		(r,g,b) = pix[i,j]
+		r += redness(pix, i, j, rozsah)
+		b += blueness(pix, i, j, rozsah)
 	horni_bod = j
 	i = x-2
 	j = y-2
-	while r > citlivost:
+	while b<citlivost_b or r>citlivost_r:
 		if i == left:
 			i = x-2
 			j = j-1
@@ -151,31 +151,39 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 				return
 		else:
 			i = i-1
-		r = redness(pix, i, j, rozsah)
+		(r,g,b) = pix[i,j]
+		r += redness(pix, i, j, rozsah)
+		b += blueness(pix, i, j, rozsah)
 	dolni_bod = j
 	i = left
 	j = up
-	while r > citlivost:
+	while b<citlivost_b or r>citlivost_r:
 		if j == y-1:
 			j = up
 			i = i+1
 			if i == x:
+ 				print "prazdny obrazek"
 				return
 		else:
 			j = j+1
-		r = redness(pix, i, j, rozsah)
+		(r,g,b) = pix[i,j]
+		r += redness(pix, i, j, rozsah)
+		b += blueness(pix, i, j, rozsah)
 	levy_bod = i
 	i = x-2
 	j = y-2
-	while r > citlivost:
+	while b<citlivost_b or r>citlivost_r:
 		if j == up:
 			j = y-2
 			i = i-1
 			if i == 0:
+ 				print "prazdny obrazek"
 				return
 		else:
 			j = j-1
-		r = redness(pix, i, j, rozsah)
+		(r,g,b) = pix[i,j]
+		r += redness(pix, i, j, rozsah)
+		b += blueness(pix, i, j, rozsah)
 	pravy_bod = i
 	
 	matice = []
@@ -220,12 +228,12 @@ def cut(obrazek, pix, (left,up), (x,y), size):
  		output_vector.extend(matice[i])
  	
  	#vykresleni matice
-#     	arr = zeros((len(matice[0]), len(matice)))
-#     	for i in xrange(len(matice[0])):
-#     		for j in xrange(len(matice)):
-#     			arr[i][j] = matice[j][i]
-#    	matshow(arr)
-#    	show()
+ 	arr = zeros((len(matice[0]), len(matice)))
+ 	for i in xrange(len(matice[0])):
+ 		for j in xrange(len(matice)):
+ 			arr[i][j] = matice[j][i]
+	matshow(arr)
+	show()
  	
 	return output_vector
 
@@ -234,4 +242,11 @@ def redness(pix, x, y, rozsah):
 	for i in range(x-rozsah,x+rozsah):
 		for j in range(y-rozsah,y+rozsah):
 			r += pix[i,j][0]
+	return r / (2*rozsah + 1)**2
+
+def blueness(pix, x, y, rozsah):
+	r = 0
+	for i in range(x-rozsah,x+rozsah):
+		for j in range(y-rozsah,y+rozsah):
+			r += pix[i,j][2]
 	return r / (2*rozsah + 1)**2
