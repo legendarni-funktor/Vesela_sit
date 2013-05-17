@@ -6,15 +6,15 @@ import os, time
 from ploting import Plot
 from preprocess import create_valid_train_preproc_sets, normalize_sets
 
-dump_train_set = False
+dump_train_set = True
 
 lamb = 1
 odchylka = 1
-width = 100
-height = 50
+width = 200
+height = 120
 size = [width, height]
 
-topologie = [width * height, 500, 80, 1]
+topologie = [width * height, 500, 50, 1]
 
 training_set = []
 validation = []
@@ -204,10 +204,10 @@ else:
     file = open("trainin_set_dump.json", "r")
     training_set, validation = json.loads(file.read())
     
-    
+print "    Total count of training patterns: {0}".format(len(training_set))    
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-training_set = training_set[0:50]
+training_set = training_set[0:150]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
@@ -219,8 +219,7 @@ error_plot = Plot(size, topologie)
 for i in xrange(100):
     iter_time = time.time()
     
-    accuracy, current_error = net.net_error(validation)
-    error_plot.update(current_error, accuracy)
+    accuracy, current_error = net.net_error(training_set)
     
     net.before_last = net.last
     net.last = current_error[0]
@@ -230,7 +229,10 @@ for i in xrange(100):
     
     print "    Current epsilon: {0:.2f}".format(net.eps)
     
-    if current_error[0] < 0.1 and current_error[1] < 0.1:
+    accuracy_valid, current_error_valid = net.net_error(validation)
+    error_plot.update(current_error, accuracy, current_error_valid, accuracy_valid)
+    
+    if current_error_valid[0] < 0.1 and current_error_valid[1] < 0.1:
         break
     for vzor in training_set:
         net.weight_correction(vzor,i)
