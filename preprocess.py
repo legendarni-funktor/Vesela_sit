@@ -109,11 +109,13 @@ def preproces_set(store_set, path, output, columns, rows, size):
 				up = vyska_dilku*j + horni_bod + okraj
 				x = sirka_dilku*(i+1) + levy_bod - okraj
 				y = vyska_dilku*(j+1) + horni_bod - okraj
-				store_set.append((cut(obrazek, pix, (left, up), (x, y), size), (output,)))
+				orez = cut(obrazek, pix, (left, up), (x, y), size)
+				if orez:
+					store_set.append((orez, (output,)))
 	
 		for k in range(x):
 			pix[k, horni_bod] = (0,255,0)				
-		obrazek.show()
+#		obrazek.show()
 
 def cut(obrazek, pix, (left,up), (x,y), size):	
 	hranice = 760
@@ -133,7 +135,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 			j = j+1
 			if j == y:
  				print "prazdny obrazek"
-				return
+				return False
 		else:
 			i = i+1
 		(r,g,b) = pix[i,j]
@@ -148,7 +150,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 			j = j-1
 			if j == 0:
  				print "prazdny obrazek"
-				return
+				return False
 		else:
 			i = i-1
 		(r,g,b) = pix[i,j]
@@ -163,7 +165,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 			i = i+1
 			if i == x:
  				print "prazdny obrazek"
-				return
+				return False
 		else:
 			j = j+1
 		(r,g,b) = pix[i,j]
@@ -178,7 +180,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 			i = i-1
 			if i == 0:
  				print "prazdny obrazek"
-				return
+				return False
 		else:
 			j = j-1
 		(r,g,b) = pix[i,j]
@@ -228,12 +230,12 @@ def cut(obrazek, pix, (left,up), (x,y), size):
  		output_vector.extend(matice[i])
  	
  	#vykresleni matice
- 	arr = zeros((len(matice[0]), len(matice)))
- 	for i in xrange(len(matice[0])):
- 		for j in xrange(len(matice)):
- 			arr[i][j] = matice[j][i]
-	matshow(arr)
-	show()
+# 	arr = zeros((len(matice[0]), len(matice)))
+# 	for i in xrange(len(matice[0])):
+# 		for j in xrange(len(matice)):
+# 			arr[i][j] = matice[j][i]
+#	matshow(arr)
+#	show()
  	
 	return output_vector
 

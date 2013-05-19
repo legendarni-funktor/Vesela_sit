@@ -25,7 +25,7 @@ class Plot():
         self.error_valid[0].append(new_error_valid[0])
         self.error_valid[1].append(new_error_valid[1])
         
-        if len(self.error[1]) > self.ax_len:
+        if len(self.error[1]) > self.ax_len - 4:
             self.ax_len += 4
         
         plt.subplot(3, 1, 3)
@@ -34,7 +34,7 @@ class Plot():
         plt.plot(self.accuracy_valid_list,'g-o', label='Accuracy_valid')
         
         plt.subplot(3, 1, 2)            
-        plt.axis([-0.05,self.ax_len,0, max(self.error[0]) + 0.1])
+        plt.axis([-0.05,self.ax_len,0, max(self.error_valid[0]) + 0.1])
         plt.plot(self.error[0],'r-.o', label='Quad errors')
         plt.plot(self.error_valid[0],'g-o', label='Quad errors_valid')
         

@@ -11,10 +11,10 @@ dump_train_set = True
 lamb = 1
 odchylka = 1
 width = 200
-height = 120
+height = 100
 size = [width, height]
 
-topologie = [width * height, 500, 50, 1]
+topologie = [width * height, 500, 50, 15, 1]
 
 training_set = []
 validation = []
@@ -62,9 +62,7 @@ class Neuron():
         self.output = self.transf_function()
         return self.output
 
-    
-        
-        
+           
 class Layer():
     
     def __init__(self, n_neurons, n_inputs):
@@ -97,7 +95,7 @@ class Network():
         self.layers = []
         self.before_last = 0
         self.last = 0
-        self.queue = [0.001, 0.001, 0.001]
+        self.queue = [0.2, 0.15, 0.15]
         self.queue_eps = [0.2, 0.2, 0.2]
         self.eps = 0.1
         for i in xrange(len(config) - 1):
@@ -117,7 +115,7 @@ class Network():
     def epsilon_update(self, time):
         self.queue_eps.pop(0)
         self.queue_eps.append(max(min(0.05 + ( sum(self.queue)/len(self.queue) ) * 50, 1), 0.005))
-        if time > 2:
+        if time > 1:
             self.eps = sum(self.queue_eps) / len(self.queue_eps)
         else:
             return 0.2
@@ -145,14 +143,14 @@ class Network():
     
         rest_of_layers = list(self.layers)
         rest_of_layers.reverse()
-        rest_of_layers.pop(0)
+        rest_of_layers.pop()
         for i in xrange(len(rest_of_layers) - 1):
-            for j, neuron in enumerate(rest_of_layers[i-1].neurons):
-#                mezisoucet = 0 #Nahrazeno fci calculate_mezisoucet - optimalizace - mene caste volani trans_function
-#                for neuron_nad_nim in rest_of_layers[i].neurons:
-#                    mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
-#                neuron.derive = mezisoucet
-                neuron.derive = self.calculate_mezisoucet(rest_of_layers[i], j)
+            for j, neuron in enumerate(rest_of_layers[i + 1].neurons):
+                mezisoucet = 0 #Nahrazeno fci calculate_mezisoucet - optimalizace - mene caste volani trans_function
+                for neuron_nad_nim in rest_of_layers[i].neurons:
+                    mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
+                neuron.derive = mezisoucet
+#                neuron.derive = self.calculate_mezisoucet(rest_of_layers[i], j)
     
     #@profile
     def calculate_mezisoucet(self, rest_of_layers_i, j):
@@ -207,7 +205,7 @@ else:
 print "    Total count of training patterns: {0}".format(len(training_set))    
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-training_set = training_set[0:150]
+training_set = training_set[0:]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
