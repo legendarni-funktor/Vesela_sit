@@ -5,20 +5,23 @@ import os, time
 
 from ploting import Plot
 from preprocess import create_valid_train_preproc_sets, normalize_sets
+from support import select_path, prepare_sets
 
-dump_train_set = False
+dump_data_set = False #Do you want to dump data set of preprocessed pictures?
 
 lamb = 1
 odchylka = 1
 width = 70
 height = 35
-ratio = 0.7
+ratio = [0.65, 0.25, 0.1] #ratio train:valid:test
 size = [width, height]
 
 topologie = [width * height, 200, 25, 8, 1]
 
-training_set = []
-validation = []
+train_set = []
+valid_set = []
+test_set = []
+
 positive = []
 negative = []
 
@@ -95,14 +98,20 @@ class First_layer():
 class Network():
     
     def __init__(self, config):
+        self.topo = config
         self.layers = []
         self.before_last = 0
         self.last = 0
         self.queue = [0.2, 0.15, 0.15]
         self.queue_eps = [0.2, 0.2, 0.2]
         self.eps = 0.1
-        for i in xrange(len(config) - 1):
-            self.layers.append(Layer(config[i + 1], config[i]))
+        
+        ans = raw_input("Load saved network?(y/n)\n")
+        if ans == "y":
+            self.load_network()
+        else:
+            for i in xrange(len(config) - 1):
+                self.layers.append(Layer(config[i + 1], config[i]))
     #@profile     
     def calc_out(self, in_put):
         in_put_tmp = numpy.zeros(len(in_put))
@@ -127,17 +136,17 @@ class Network():
         return self.eps
 
     #@profile
-    def net_error(self, training_set):
+    def net_error(self, train_set):
         output = 0
         correct_output = 0
-        for vzor in training_set:
+        for vzor in train_set:
             (x,d) = vzor
             net_output = self.calc_out(x)
             output += error(net_output, d)**2
             if int(round(net_output[0])) == d[0]: #pocita kolikrat sit vyhodnotila vzor spravne
                 correct_output += 1
                 
-        return float(correct_output)/len(training_set), ((output / len(training_set))**(0.5), output)
+        return float(correct_output)/len(train_set), ((output / len(train_set))**(0.5), output)
     
     #@profile
     def partial_derivation_of_error(self, d):
@@ -188,25 +197,38 @@ class Network():
             neuron.der_vah.append(neuron.derive * trans_out * neuron_pod_nim.output)   
             
     def export_network(self):
-        self.to_save = [topologie]
-        for layer in enumerate(self.layers):
+        self.to_save = [self.topo]
+        for layer in self.layers:
             self.to_save.append([])
-            for neuron in self.neurons:
-                self.to_save[-1].append(neuron.weights)
-        file = open("network_export.json", "w+")
-        json.dump(self.to_save, file)
+            for neuron in layer.neurons:
+                to_save[-1].append([w for w in neuron.weights])
+        file = open("network_export_Topo:"+ str(self.topo) + ".json", "w+")
+        json.dump(to_save, file)
         file.flush()
         file.close()
         
     def load_network(self):
-        pass
+        print "Please select the path to the json network file"
+        path = select_path()
+        file = open(path, "r")
+        net_data = json.loads(file.read())
+        self.topo = net_data[0]
+        
+        for i in xrange(len(self.topo) - 1):
+            self.layers.append(Layer(self.topo[i + 1], self.topo[i]))
+        for i, layer in enumerate(self.layers):
+            for j, neuron in enumerate(layer.neurons):
+                for k, weight in enumerate(net_data[i + 1][j]):
+                    neuron.weights[k] = weight
+                
+        
+        
               
 net = Network(topologie)
 
-
 print "Preprocessing..."
 preproc_strat_time = time.time()
-if dump_train_set or not os.path.isfile("trainin_set_dump.json"):
+if dump_data_set or not os.path.isfile("trainin_set_dump.json"):
 #    normalize_sets()
     create_valid_train_preproc_sets(positive, negative, size)
     
@@ -219,27 +241,11 @@ else:
     file = open("trainin_set_dump.json", "r")
     positive, negative = json.loads(file.read())
 
-index_pos = int(len(positive)*ratio)
-index_neg = int(len(negative)*ratio)
+#splits the data into train, valid and test sets
+prepare_sets(positive, negative, ratio, train_set, valid_set, test_set)
 
-shuffle(positive)
-shuffle(negative)
 
-training_set.extend(positive[0:index_pos])
-training_set.extend(negative[0:index_neg])
-
-validation.extend(positive[index_pos:])
-validation.extend(negative[index_neg:])
-    
-print "    Total count of training patterns: {0}".format(len(training_set))    
-print "    Every day I'm shuffling!!!! (data sets)"
-
-shuffle(training_set)
-training_set = training_set
-shuffle(validation)
-#validation = validation[0:100]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
-
 
 print "Getting clever!..."
 print '    This may take a while. So... Try to relax...'
@@ -249,7 +255,7 @@ error_plot = Plot(size, topologie)
 for i in xrange(10):
     iter_time = time.time()
     
-    accuracy, current_error = net.net_error(training_set)
+    accuracy, current_error = net.net_error(train_set)
     
     net.before_last = net.last
     net.last = current_error[0]
@@ -259,12 +265,12 @@ for i in xrange(10):
     
     print "    Current epsilon: {0:.2f}".format(net.eps)
     
-    accuracy_valid, current_error_valid = net.net_error(validation)
+    accuracy_valid, current_error_valid = net.net_error(valid_set)
     error_plot.update(current_error, accuracy, current_error_valid, accuracy_valid)
     
     if accuracy_valid > 0.85:
         break
-    for vzor in training_set:
+    for vzor in train_set:
         net.weight_correction(vzor,i)
     print "\t\t\t\tIteration time: {0:.2f}sec".format(time.time() - iter_time)
 
@@ -272,16 +278,18 @@ print "Learning finished in time: {0:.2f}sec\n".format(time.time() - learning_ti
 
 print "Calculating accuracy..."
 acc_sum = 0
-for i, valid_vzor in enumerate(validation):
+for i, valid_vzor in enumerate(test_set):
     net_out = net.calc_out(valid_vzor[0])
     if valid_vzor[1][0] == int(round(net_out[0])):
         acc_sum += 1
         
         
-print "Network accuracy: {0:.3f}".format(float(acc_sum)/len(validation))
+print "Network accuracy on train set: {0:.3f}".format(float(acc_sum)/len(test_set))
 
-acc = float(acc_sum)/len(validation)
+acc = float(acc_sum)/len(test_set)
 
 error_plot.save_plot(acc)
 
-#net.export_network()
+export = raw_input("Export_network?(y/n)\n")
+if export == 'y':
+    net.export_network()
