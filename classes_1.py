@@ -10,14 +10,17 @@ dump_train_set = False
 
 lamb = 1
 odchylka = 1
-width = 200
-height = 100
+width = 70
+height = 35
+ratio = 0.7
 size = [width, height]
 
-topologie = [width * height, 500, 50, 15, 1]
+topologie = [width * height, 200, 25, 8, 1]
 
 training_set = []
 validation = []
+positive = []
+negative = []
 
 #@profile
 def trans_function_derivation(potencial): #Dosazena primo sigmoid - prilis caste volani.
@@ -146,11 +149,11 @@ class Network():
         rest_of_layers.pop()
         for i in xrange(len(rest_of_layers) - 1):
             for j, neuron in enumerate(rest_of_layers[i + 1].neurons):
-                mezisoucet = 0 #Nahrazeno fci calculate_mezisoucet - optimalizace - mene caste volani trans_function
-                for neuron_nad_nim in rest_of_layers[i].neurons:
-                    mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
-                neuron.derive = mezisoucet
-#                neuron.derive = self.calculate_mezisoucet(rest_of_layers[i], j)
+#                mezisoucet = 0 #Nahrazeno fci calculate_mezisoucet - optimalizace - mene caste volani trans_function
+#                for neuron_nad_nim in rest_of_layers[i].neurons:
+#                    mezisoucet += neuron_nad_nim.derive * trans_function_derivation(neuron_nad_nim.transfer_input) * neuron_nad_nim.weights[j]
+#                neuron.derive = mezisoucet
+                neuron.derive = self.calculate_mezisoucet(rest_of_layers[i], j)
     
     #@profile
     def calculate_mezisoucet(self, rest_of_layers_i, j):
@@ -159,6 +162,7 @@ class Network():
             potencial = neuron_nad_nim.transfer_input
             trans_out = lamb * (1/(1+math.e**(potencial*(-1*lamb)))) * (1 - (1/(1+math.e**(potencial*(-1*lamb)))))
             mezisoucet += neuron_nad_nim.derive * trans_out * neuron_nad_nim.weights[j]
+        return mezisoucet
     
     #@profile
     def weight_correction(self, vzor, time):
@@ -183,6 +187,19 @@ class Network():
             trans_out = lamb * (1/(1+math.e**(potencial*(-1*lamb)))) * (1 - (1/(1+math.e**(potencial*(-1*lamb)))))
             neuron.der_vah.append(neuron.derive * trans_out * neuron_pod_nim.output)   
             
+    def export_network(self):
+        self.to_save = [topologie]
+        for layer in enumerate(self.layers):
+            self.to_save.append([])
+            for neuron in self.neurons:
+                self.to_save[-1].append(neuron.weights)
+        file = open("network_export.json", "w+")
+        json.dump(self.to_save, file)
+        file.flush()
+        file.close()
+        
+    def load_network(self):
+        pass
               
 net = Network(topologie)
 
@@ -190,24 +207,37 @@ net = Network(topologie)
 print "Preprocessing..."
 preproc_strat_time = time.time()
 if dump_train_set or not os.path.isfile("trainin_set_dump.json"):
-    normalize_sets()
-    create_valid_train_preproc_sets(validation, training_set, size)
+#    normalize_sets()
+    create_valid_train_preproc_sets(positive, negative, size)
     
     file = open("trainin_set_dump.json", "w+")
-    json.dump([training_set, validation], file)
+    json.dump([positive, negative], file)
     file.flush()
     file.close()
     
 else:
     file = open("trainin_set_dump.json", "r")
-    training_set, validation = json.loads(file.read())
+    positive, negative = json.loads(file.read())
+
+index_pos = int(len(positive)*ratio)
+index_neg = int(len(negative)*ratio)
+
+shuffle(positive)
+shuffle(negative)
+
+training_set.extend(positive[0:index_pos])
+training_set.extend(negative[0:index_neg])
+
+validation.extend(positive[index_pos:])
+validation.extend(negative[index_neg:])
     
 print "    Total count of training patterns: {0}".format(len(training_set))    
 print "    Every day I'm shuffling!!!! (data sets)"
+
 shuffle(training_set)
-training_set = training_set[0:60]
+training_set = training_set
 shuffle(validation)
-validation = validation [0:20]
+#validation = validation[0:100]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
@@ -216,7 +246,7 @@ print '    This may take a while. So... Try to relax...'
 learning_time = time.time()
 error_plot = Plot(size, topologie)
 
-for i in xrange(100):
+for i in xrange(10):
     iter_time = time.time()
     
     accuracy, current_error = net.net_error(training_set)
@@ -232,7 +262,7 @@ for i in xrange(100):
     accuracy_valid, current_error_valid = net.net_error(validation)
     error_plot.update(current_error, accuracy, current_error_valid, accuracy_valid)
     
-    if current_error_valid[0] < 0.1 and current_error_valid[1] < 0.1:
+    if accuracy_valid > 0.85:
         break
     for vzor in training_set:
         net.weight_correction(vzor,i)
@@ -253,3 +283,5 @@ print "Network accuracy: {0:.3f}".format(float(acc_sum)/len(validation))
 acc = float(acc_sum)/len(validation)
 
 error_plot.save_plot(acc)
+
+#net.export_network()
