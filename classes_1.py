@@ -6,7 +6,7 @@ import os, time
 from ploting import Plot
 from preprocess import create_valid_train_preproc_sets, normalize_sets
 
-dump_train_set = True
+dump_train_set = False
 
 lamb = 1
 odchylka = 1
@@ -205,7 +205,9 @@ else:
 print "    Total count of training patterns: {0}".format(len(training_set))    
 print "    Every day I'm shuffling!!!! (data sets)"
 shuffle(training_set)
-training_set = training_set[0:]
+training_set = training_set[0:60]
+shuffle(validation)
+validation = validation [0:20]
 print "Preprocessing successfully finished in time: {0:.2f}secs!\n".format(time.time() - preproc_strat_time)
 
 
