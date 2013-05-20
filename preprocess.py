@@ -144,13 +144,12 @@ def preproces_set(store_set, path, output, columns, rows, size):
 # 			pix[k, horni_bod] = (0,255,0)				
 		obrazek.show()
 #@profile
-def cut(obrazek, pix, (left,up), (x,y), size):	
-	hranice = 760
+def cut(obrazek, pix, (left,up), (x,y), size):
 	left = left + (x - left)/10
 	x = x - (x - left)/10
 	citlivost_r = 290
 	citlivost_b = 180
-	citlivost = 0.05
+	citlivost = 0.04
 	horni_bod = up
 	dolni_bod = y
 	levy_bod = left
