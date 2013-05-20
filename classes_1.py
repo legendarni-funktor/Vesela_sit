@@ -11,8 +11,8 @@ dump_data_set = False #Do you want to dump data set of preprocessed pictures?
 
 lamb = 1
 odchylka = 1
-width = 70
-height = 35
+width = 100
+height = 50
 ratio = [0.65, 0.25, 0.1] #ratio train:valid:test
 size = [width, height]
 
@@ -228,17 +228,17 @@ net = Network(topologie)
 
 print "Preprocessing..."
 preproc_strat_time = time.time()
-if dump_data_set or not os.path.isfile("trainin_set_dump.json"):
+if dump_data_set or not os.path.isfile("trainin_set_dump_" + str(width) + "x" + str(height) + ".json"):
 #    normalize_sets()
     create_valid_train_preproc_sets(positive, negative, size)
     
-    file = open("trainin_set_dump.json", "w+")
+    file = open("trainin_set_dump_" + str(width) + "x" + str(height) + ".json", "w+")
     json.dump([positive, negative], file)
     file.flush()
     file.close()
     
 else:
-    file = open("trainin_set_dump.json", "r")
+    file = open("trainin_set_dump_" + str(width) + "x" + str(height) + ".json", "r")
     positive, negative = json.loads(file.read())
 
 #splits the data into train, valid and test sets
