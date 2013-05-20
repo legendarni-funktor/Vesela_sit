@@ -46,19 +46,26 @@ def preproces_set(store_set, path, output, columns, rows, size):
 		p1x = 2
 		p1y = 2
 		(r,g,b) = pix[p1x,p1y]
+		r += redness(pix, p1x, p1y)
+		b += blueness(pix, p1x, p1y)		
 		while(r<(g+b)*citlivost+10):
 			p1y += 1
 			(r,g,b) = pix[p1x,p1y]
-			
+			r += redness(pix, p1x, p1y)
+			b += blueness(pix, p1x, p1y)			
 		p2x = x-2
 		p2y = 2
 		(r,g,b) = pix[p2x,p2y]
+		r += redness(pix, p2x, p2y)
+		b += blueness(pix, p2x, p2y)
 		while(r<(g+b)*citlivost+10):
 			p2y += 1
 			(r,g,b) = pix[p2x,p2y]
+			r += redness(pix, p2x, p2y)
+			b += blueness(pix, p2x, p2y)
 		#spocitam uhel o ktery je papir otocen (pravdepodobne docela maly)
 		angle = math.floor(math.atan(((p1y-p2y)*1.0)/((p1x-p2x)*1.0))*180/math.pi)
-		obrazek.rotate(angle)					#minusem si nejsem jist
+		obrazek.rotate(angle)
 		
 		#znovu prvni horizontalni cara, ale tentokrat jen na jedne strane:
 		p1x = 2
