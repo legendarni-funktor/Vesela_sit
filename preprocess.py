@@ -24,12 +24,12 @@ def normalize_set(path):
 	
 	
 def create_valid_train_preproc_sets(positive, negative, size):
-  for i, path in enumerate(['training_set_img_neg', 'valid_set_img_neg']):
-    preproces_set(negative, path, 0, 7, 25, size)
-  for i, path in enumerate(['valid_set_img_pos', 'training_set_img_pos']):
-    preproces_set(positive, path, 1, 7, 25, size) 
+	for i, path in enumerate(['training_set_img_neg', 'valid_set_img_neg']):
+		preproces_set(negative, path, 0, 7, 25, size)
+	for i, path in enumerate(['valid_set_img_pos', 'training_set_img_pos']):
+		preproces_set(positive, path, 1, 7, 25, size) 
 		
-
+#@profile
 def preproces_set(store_set, path, output, columns, rows, size):
 	for file_name in os.listdir(path):
 		obrazek = Image.open(path + '/' + file_name)
@@ -121,7 +121,7 @@ def preproces_set(store_set, path, output, columns, rows, size):
 # 		for k in range(x):
 # 			pix[k, horni_bod] = (0,255,0)				
 		obrazek.show()
-
+#@profile
 def cut(obrazek, pix, (left,up), (x,y), size):	
 	hranice = 760
 	left = left + (x - left)/10
@@ -135,18 +135,29 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 	pravy_bod = x
 	
 	mezisoucet = 0
+	first_while = True
+	stored_blue = {}
+	stored_red = {}
 	while float(mezisoucet)/((pravy_bod-levy_bod)*(dolni_bod-horni_bod)) < citlivost:
 		mezisoucet = 0	
 		for i in xrange(levy_bod, pravy_bod):
 			for j in xrange(horni_bod,dolni_bod):
  				(r,g,b) = pix[i,j]
- 				r += redness(pix, i, j)
- 				b += blueness(pix, i, j)				
+ 				
+ 				if first_while: # v prvnim cyklu se bluness a red... ulozi do slovniku a dale uz se budou z nej jen volat - je to rychlejsi
+ 					stored_blue[(i, j,)] = blueness(pix, i, j)
+ 					stored_red[(i, j,)] = redness(pix, i, j)
+ 					r += stored_red[(i, j,)]
+ 				 	b += stored_blue[(i, j,)]
+ 				else:
+					r += stored_red[(i, j,)]
+ 				 	b += stored_blue[(i, j,)]			
 				if (b>citlivost_b and r<citlivost_r):
 					mezisoucet += 1
+					
 		citlivost_r += 10
 		citlivost_b -= 10
-		
+		first_while = False
 	citlivost_r -= 10
 	citlivost_b += 10
 	
@@ -288,9 +299,11 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 #	show()
  	
 	return output_vector
-
+#@profile
 def redness(pix, i, j):
-	return (pix[i,j][0] + pix[i+1,j][0] + pix[i+1,j+1][0] + pix[i,j+1][0] + pix[i-1,j+1][0] + pix[i-1,j][0] + pix[i-1,j-1][0] + pix[i,j-1][0] + pix[i+1,j-1][0])/9
-
+	return (pix[i,j][0] + pix[i+1,j][0] + pix[i+1,j+1][0] + pix[i,j+1][0] +\
+			pix[i-1,j+1][0] + pix[i-1,j][0] + pix[i-1,j-1][0] + pix[i,j-1][0] + pix[i+1,j-1][0])/9
+#@profile
 def blueness(pix, i, j):
-	return  (pix[i,j][2] + pix[i+1,j][2] + pix[i+1,j+1][2] + pix[i,j+1][2] + pix[i-1,j+1][2] + pix[i-1,j][2] + pix[i-1,j-1][2] + pix[i,j-1][2] + pix[i+1,j-1][2])/9
+	return  (pix[i,j][2] + pix[i+1,j][2] + pix[i+1,j+1][2] + pix[i,j+1][2] +\
+			 pix[i-1,j+1][2] + pix[i-1,j][2] + pix[i-1,j-1][2] + pix[i,j-1][2] + pix[i+1,j-1][2])/9
