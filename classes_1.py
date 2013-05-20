@@ -16,7 +16,7 @@ height = 35
 ratio = [0.65, 0.25, 0.1] #ratio train:valid:test
 size = [width, height]
 
-topologie = [width * height, 200, 25, 8, 1]
+topologie = [width * height, 500, 50, 10, 1]
 
 train_set = []
 valid_set = []
