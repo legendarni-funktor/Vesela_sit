@@ -197,9 +197,9 @@ class Network():
             neuron.der_vah.append(neuron.derive * trans_out * neuron_pod_nim.output)   
             
     def export_network(self):
-        self.to_save = [self.topo]
+        to_save = [self.topo]
         for layer in self.layers:
-            self.to_save.append([])
+            to_save.append([])
             for neuron in layer.neurons:
                 to_save[-1].append([w for w in neuron.weights])
         file = open("network_export_Topo:"+ str(self.topo) + ".json", "w+")
