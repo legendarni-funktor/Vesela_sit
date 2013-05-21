@@ -147,9 +147,9 @@ def preproces_set(store_set, path, output, columns, rows, size):
 def cut(obrazek, pix, (left,up), (x,y), size):
 	left = left + (x - left)/10
 	x = x - (x - left)/10
-	citlivost_r = 290
-	citlivost_b = 180
-	citlivost = 0.04
+	citlivost_r = 320
+	citlivost_b = 150
+	citlivost = 0.03
 	horni_bod = up
 	dolni_bod = y
 	levy_bod = left
@@ -159,6 +159,31 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 	first_while = True
 	stored_blue = {}
 	stored_red = {}
+	
+	#nastaveni citlivosti
+	while float(mezisoucet)/((pravy_bod-levy_bod)*(dolni_bod-horni_bod)) < citlivost:
+		mezisoucet = 0	
+		for i in xrange(levy_bod, pravy_bod):
+			for j in xrange(horni_bod,dolni_bod):
+ 				(r,g,b) = pix[i,j]
+ 				
+ 				if first_while: # v prvnim cyklu se bluness a red... ulozi do slovniku a dale uz se budou z nej jen volat - je to rychlejsi
+ 					stored_blue[(i, j,)] = blueness(pix, i, j)
+ 					stored_red[(i, j,)] = redness(pix, i, j)
+ 					r += stored_red[(i, j,)]
+ 				 	b += stored_blue[(i, j,)]
+ 				else:
+					r += stored_red[(i, j,)]
+ 				 	b += stored_blue[(i, j,)]			
+				if (b>citlivost_b and r<citlivost_r):
+					mezisoucet += 1
+					
+		citlivost_r += 20
+		citlivost_b -= 20
+		first_while = False
+	citlivost_r -= 20
+	citlivost_b += 20
+	
 	while float(mezisoucet)/((pravy_bod-levy_bod)*(dolni_bod-horni_bod)) < citlivost:
 		mezisoucet = 0	
 		for i in xrange(levy_bod, pravy_bod):
@@ -181,6 +206,7 @@ def cut(obrazek, pix, (left,up), (x,y), size):
 		first_while = False
 	citlivost_r -= 10
 	citlivost_b += 10
+	
 	
 	#hledani horniho bodu 
 	i = levy_bod
